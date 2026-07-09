@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.dao.ViewHistoryMapper">
+
+    <!-- 结果映射（包含关联电影） -->
+    <resultMap id="ViewHistoryResultMap" type="ViewHistory">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="movieId" column="movie_id"/>
+        <result property="viewTime" column="view_time"/>
+        <!-- 关联电影映射 -->
+        <association property="movie" javaType="Movie">
+            <id property="id" column="movie_id"/>
+            <result property="title" column="title"/>
+            <result property="poster" column="poster"/>
+            <result property="rating" column="rating"/>
+        </association>
+    </resultMap>
+
+    <!-- 通用查询列 -->
+    <sql id="Base_Column_List">
+        vh.id, vh.user_id, vh.movie_id, vh.view_time,
+        m.title, m.poster, m.rating
+    </sql>
+
+    <!-- 根据用户 ID 查询观看历史 -->
+    <select id="findByUserId" parameterType="int" resultMap="ViewHistoryResultMap">
+        SELECT
+            <include refid="Base_Column_List"/>
+        FROM view_history vh
+        LEFT JOIN movie m ON vh.movie_id = m.id
+        WHERE vh.user_id = #{userId}
+        ORDER BY vh.view_time DESC
+    </select>
+
+    <!-- 插入观看历史 -->
+    <insert id="insert" parameterType="ViewHistory" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO view_history (
+            user_id, movie_id
+        ) VALUES (
+            #{userId}, #{movieId}
+        )
+    </insert>
+
+    <!-- 根据 ID 删除观看历史 -->
+    <delete id="deleteById" parameterType="int">
+        DELETE FROM view_history WHERE id = #{id}
+    </delete>
+
+    <!-- 清空某用户的所有观看历史 -->
+    <delete id="clearByUserId" parameterType="int">
+        DELETE FROM view_history WHERE user_id = #{userId}
+    </delete>
+
+    <!-- 根据用户 ID 和电影 ID 查询观看历史 -->
+    <select id="findByUserIdAndMovieId" resultMap="ViewHistoryResultMap">
+        SELECT
+            <include refid="Base_Column_List"/>
+        FROM view_history vh
+        LEFT JOIN movie m ON vh.movie_id = m.id
+        WHERE vh.user_id = #{userId} AND vh.movie_id = #{movieId}
+    </select>
+
+    <!-- 更新某用户某部电影的观看时间 -->
+    <update id="updateViewTime">
+        UPDATE view_history
+        SET view_time = NOW()
+        WHERE user_id = #{userId} AND movie_id = #{movieId}
+    </update>
+
+</mapper>

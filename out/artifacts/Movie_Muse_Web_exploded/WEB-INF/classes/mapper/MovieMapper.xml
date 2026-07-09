@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.dao.MovieMapper">
+    
+    <!-- 结果映射 -->
+    <resultMap id="MovieResultMap" type="Movie">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="poster" column="poster"/>
+        <result property="description" column="description"/>
+        <result property="director" column="director"/>
+        <result property="releaseYear" column="release_year"/>
+        <result property="runtime" column="runtime"/>
+        <result property="rating" column="rating"/>
+        <result property="viewCount" column="view_count"/>
+        <result property="videoUrl" column="video_url"/>
+        <result property="isFree" column="is_free"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+    
+    <!-- 通用查询列 -->
+    <sql id="Base_Column_List">
+        id, title, poster, description, director, release_year, runtime, rating, 
+        view_count, video_url, is_free, status, create_time
+    </sql>
+    
+    <!-- 根据 ID 查询电影 -->
+    <select id="findById" parameterType="int" resultMap="MovieResultMap">
+        SELECT
+            <include refid="Base_Column_List"/>
+        FROM movie
+        WHERE id = #{id}
+    </select>
+    
+    <!-- 根据标题查询电影 -->
+    <select id="findByTitle" parameterType="string" resultMap="MovieResultMap">
+        SELECT
+            <include refid="Base_Column_List"/>
+        FROM movie
+        WHERE title = #{title}
+    </select>
+    
+    <!-- 查询所有电影（分页） -->
+    <select id="findAll" resultMap="MovieResultMap">
+        SELECT
+            <include refid="Base_Column_List"/>
+        FROM movie
+        WHERE status = 1
+        ORDER BY rating DESC, create_time DESC
+        <if test="limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <!-- 查询所有电影并按 ID 升序排列（管理后台使用） -->
+    <select id="findAllOrderById" resultMap="MovieResultMap">
+        SELECT
+            <include refid="Base_Column_List"/>
+        FROM movie
+        WHERE status = 1
+        ORDER BY id ASC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 根据分类 ID 查询电影 -->
+    <select id="findByCategory" resultMap="MovieResultMap">
+        SELECT m.
+            <include refid="Base_Column_List"/>
+        FROM movie m
+        INNER JOIN movie_category mc ON m.id = mc.movie_id
+        WHERE mc.category_id = #{categoryId} AND m.status = 1
+        ORDER BY m.rating DESC, m.create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+    
+    <!-- 多字段模糊搜索：标题、导演、简介 -->
+    <select id="searchByTitle" resultMap="MovieResultMap">
+        SELECT
+            <include refid="Base_Column_List"/>
+        FROM movie
+        WHERE status = 1
+          AND (
+              title LIKE CONCAT('%', #{keyword}, '%')
+              OR director LIKE CONCAT('%', #{keyword}, '%')
+              OR description LIKE CONCAT('%', #{keyword}, '%')
+          )
+        ORDER BY
+            CASE
+                WHEN title LIKE CONCAT('%', #{keyword}, '%') THEN 1
+                WHEN director LIKE CONCAT('%', #{keyword}, '%') THEN 2
+                ELSE 3
+            END,
+            rating DESC,
+            create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+    
+    <!-- 获取电影总数 -->
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM movie WHERE status = 1
+    </select>
+    
+    <!-- 获取分类下的电影总数 -->
+    <select id="countByCategory" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM movie m
+        INNER JOIN movie_category mc ON m.id = mc.movie_id
+        WHERE mc.category_id = #{categoryId} AND m.status = 1
+    </select>
+    
+    <!-- 多字段搜索统计总数 -->
+    <select id="countSearch" parameterType="string" resultType="int">
+        SELECT COUNT(*) FROM movie
+        WHERE status = 1
+          AND (
+              title LIKE CONCAT('%', #{keyword}, '%')
+              OR director LIKE CONCAT('%', #{keyword}, '%')
+              OR description LIKE CONCAT('%', #{keyword}, '%')
+          )
+    </select>
+    
+    <!-- 插入电影 -->
+    <insert id="insert" parameterType="Movie" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO movie (
+            title, poster, description, director, release_year, runtime,
+            rating, view_count, video_url, is_free, status
+        ) VALUES (
+            #{title}, #{poster}, #{description}, #{director}, #{releaseYear},
+            #{runtime}, #{rating}, #{viewCount}, #{videoUrl}, #{isFree}, #{status}
+        )
+    </insert>
+    
+    <!-- 更新电影信息 -->
+    <update id="update" parameterType="Movie">
+        UPDATE movie
+        <set>
+            <if test="title != null">title = #{title},</if>
+            <if test="poster != null">poster = #{poster},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="director != null">director = #{director},</if>
+            <if test="releaseYear != null">release_year = #{releaseYear},</if>
+            <if test="runtime != null">runtime = #{runtime},</if>
+            <if test="rating != null">rating = #{rating},</if>
+            <if test="viewCount != null">view_count = #{viewCount},</if>
+            <if test="videoUrl != null">video_url = #{videoUrl},</if>
+            <if test="isFree != null">is_free = #{isFree},</if>
+            <if test="status != null">status = #{status},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+    
+    <!-- 删除电影 -->
+    <delete id="deleteById" parameterType="int">
+        DELETE FROM movie WHERE id = #{id}
+    </delete>
+
+    <!-- 查询电影关联的分类 ID 列表 -->
+    <select id="findCategoryIdsByMovieId" resultType="int">
+        SELECT category_id FROM movie_category WHERE movie_id = #{movieId}
+    </select>
+
+    <!-- 插入电影分类关联 -->
+    <insert id="insertMovieCategory">
+        INSERT INTO movie_category (movie_id, category_id)
+        VALUES (#{movieId}, #{categoryId})
+    </insert>
+
+    <!-- 删除电影的所有分类关联 -->
+    <delete id="deleteMovieCategoriesByMovieId">
+        DELETE FROM movie_category WHERE movie_id = #{movieId}
+    </delete>
+
+    <!-- 更新播放次数 -->
+    <update id="incrementViewCount" parameterType="int">
+        UPDATE movie SET view_count = view_count + 1 WHERE id = #{id}
+    </update>
+    
+    <!-- 查询评分最高的电影 -->
+    <select id="findTopRated" resultMap="MovieResultMap">
+        SELECT
+            <include refid="Base_Column_List"/>
+        FROM movie
+        WHERE status = 1
+        ORDER BY rating DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+    
+    <!-- 查询免费电影 -->
+    <select id="findFreeMovies" resultMap="MovieResultMap">
+        SELECT
+            <include refid="Base_Column_List"/>
+        FROM movie
+        WHERE is_free = 1 AND status = 1
+        ORDER BY rating DESC, view_count DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+    
+    <!-- 按播放次数查询热门电影 -->
+    <select id="findByViewCount" resultMap="MovieResultMap">
+        SELECT
+            <include refid="Base_Column_List"/>
+        FROM movie
+        WHERE status = 1
+        ORDER BY view_count DESC, rating DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+    
+</mapper>

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.dao.UserMapper">
+    
+    <!-- 结果映射 -->
+    <resultMap id="UserResultMap" type="User">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="email" column="email"/>
+        <result property="avatar" column="avatar"/>
+        <result property="gender" column="gender"/>
+        <result property="isVip" column="is_vip"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+    
+    <!-- 通用查询列 -->
+    <sql id="Base_Column_List">
+        id, username, password, email, avatar, gender, is_vip, status, create_time
+    </sql>
+    
+    <!-- 根据 ID 查询用户 -->
+    <select id="findById" parameterType="int" resultMap="UserResultMap">
+        SELECT
+            <include refid="Base_Column_List"/>
+        FROM user
+        WHERE id = #{id}
+    </select>
+    
+    <!-- 根据用户名查询用户 -->
+    <select id="findByUsername" parameterType="string" resultMap="UserResultMap">
+        SELECT
+            <include refid="Base_Column_List"/>
+        FROM user
+        WHERE username = #{username}
+    </select>
+    
+    <!-- 根据邮箱查询用户 -->
+    <select id="findByEmail" parameterType="string" resultMap="UserResultMap">
+        SELECT
+            <include refid="Base_Column_List"/>
+        FROM user
+        WHERE email = #{email}
+    </select>
+    
+    <!-- 插入用户（注册） -->
+    <insert id="insert" parameterType="User" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user (
+            username, password, email, avatar, gender, is_vip, status
+        ) VALUES (
+            #{username}, #{password}, #{email}, #{avatar}, #{gender}, #{isVip}, #{status}
+        )
+    </insert>
+    
+    <!-- 更新用户信息 -->
+    <update id="update" parameterType="User">
+        UPDATE user
+        <set>
+            <if test="username != null">username = #{username},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="avatar != null">avatar = #{avatar},</if>
+            <if test="gender != null">gender = #{gender},</if>
+            <if test="isVip != null">is_vip = #{isVip},</if>
+            <if test="status != null">status = #{status},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+    
+    <!-- 删除用户 -->
+    <delete id="deleteById" parameterType="int">
+        DELETE FROM user WHERE id = #{id}
+    </delete>
+    
+    <!-- 查询所有用户 -->
+    <select id="findAll" resultMap="UserResultMap">
+        SELECT
+            <include refid="Base_Column_List"/>
+        FROM user
+        ORDER BY create_time DESC
+    </select>
+    
+    <!-- 根据用户名模糊查询 -->
+    <select id="findByUsernameLike" parameterType="string" resultMap="UserResultMap">
+        SELECT
+            <include refid="Base_Column_List"/>
+        FROM user
+        WHERE username LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 获取用户总数 -->
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM user
+    </select>
+
+</mapper>

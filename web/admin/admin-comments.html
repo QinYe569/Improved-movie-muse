@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>评论管理 - Movie-Muse</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --sidebar-bg: #1a1a2e;
+            --sidebar-hover: #16213e;
+            --primary-color: #9333ea;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: url('../images/pawel-czerwinski-VWVO0g9A3rg-unsplash.jpg') center center / cover no-repeat;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(243, 244, 246, 0.3);
+            z-index: 0;
+        }
+
+        body > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: var(--sidebar-bg);
+            color: white;
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        .sidebar .logo {
+            padding: 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar .logo h1 {
+            font-size: 40px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #9333ea, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 1rem;
+        }
+
+        .sidebar-nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 4px;
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: #9ca3af;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-nav a:hover {
+            background: var(--sidebar-hover);
+            color: white;
+        }
+
+        .sidebar-nav a.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 2rem 3rem;
+        }
+
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            background: white;
+            padding: 1.5rem 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-left a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-left a:hover {
+            color: var(--primary-color);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #9333ea, #a855f7);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        /* Page Header */
+        .page-header {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Action Bar */
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-box input {
+            padding: 10px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            width: 300px;
+            outline: none;
+        }
+
+        /* Table */
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f9fafb;
+        }
+
+        th {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 0.625rem 1rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-primary);
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        /* Movie Row */
+        .movie-row {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .movie-row:hover {
+            background: #f3f4f6;
+        }
+
+        .movie-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .movie-poster {
+            width: 32px;
+            height: 48px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .movie-title {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .expand-icon {
+            transition: transform 0.2s ease;
+            color: var(--text-secondary);
+        }
+
+        .expand-icon.expanded {
+            transform: rotate(90deg);
+        }
+
+        /* Comment Detail Row */
+        .comment-detail-row {
+            display: none;
+        }
+
+        .comment-detail-row.visible {
+            display: table-row;
+        }
+
+        .comment-detail-row td {
+            background: #fafafa;
+            padding: 0.5rem 1rem;
+        }
+
+        .comment-list {
+            margin-left: 44px;
+        }
+
+        .comment-item {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .comment-item:last-child {
+            border-bottom: none;
+        }
+
+        .comment-left {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .comment-user-badge {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .comment-text {
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .comment-time {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            margin-left: 8px;
+        }
+
+        .btn-delete-small {
+            background: #fee2e2;
+            color: #991b1b;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .btn-delete-small:hover {
+            background: #fecaca;
+        }
+
+        /* Badge */
+        .comment-count-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            border-radius: 6px;
+        }
+
+        .btn-delete {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .btn-delete:hover {
+            background: #fecaca;
+        }
+
+        /* Delete Confirmation Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-title {
+            color: #ffffff;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .modal-title i {
+            color: #ef4444;
+        }
+
+        .modal-message {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .modal-message strong {
+            color: #ffffff;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .modal-cancel-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-cancel-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .modal-confirm-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #ffffff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-confirm-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: #d1d5db;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state p {
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <h1>Movie-Muse</h1>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="admin-dashboard.html"><i class="fas fa-home"></i> 控制台</a></li>
+                <li><a href="admin-movie-list.html"><i class="fas fa-film"></i> 电影管理</a></li>
+                <li><a href="admin-category.html"><i class="fas fa-tags"></i> 分类管理</a></li>
+                <li><a href="admin-users.html"><i class="fas fa-users"></i> 用户管理</a></li>
+                <li><a href="admin-comments.html" class="active"><i class="fas fa-comments"></i> 评论管理</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Navbar -->
+        <header class="top-nav">
+            <div class="nav-left">
+                <a href="../index.html">
+                    <i class="fas fa-home"></i> 返回首页
+                </a>
+            </div>
+            <div class="nav-right">
+                <div class="user-info">
+                    <div class="user-avatar">A</div>
+                    <span style="font-weight: 500;">管理员</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title"><i class="fas fa-comments" style="margin-right: 12px; color: #9333ea;"></i>评论管理</h1>
+            <p class="page-subtitle">按电影分类管理用户评论，包括查看、删除等操作</p>
+        </div>
+
+        <!-- Action Bar -->
+        <div class="action-bar">
+            <div class="search-box">
+                <input type="text" placeholder="搜索用户名或电影名..." id="searchInput" onkeyup="AdminCommentSystem.search()">
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 40px;"></th>
+                        <th>电影</th>
+                        <th>评论数量</th>
+                        <th>最新评论</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="commentsTableBody">
+                    <!-- 数据将通过 JS 动态加载 -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- 删除评论确认弹窗 -->
+    <div id="deleteConfirmModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-title">
+                <i class="fas fa-exclamation-triangle"></i>
+                确认删除
+            </div>
+            <div class="modal-message">
+                您确定要删除这条评论吗？<br>
+                <strong id="deleteCommentPreview"></strong>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-cancel-btn" id="cancelDeleteBtn">
+                    <i class="fas fa-times"></i> 取消
+                </button>
+                <button class="modal-confirm-btn" id="confirmDeleteBtn">
+                    <i class="fas fa-trash-alt"></i> 删除
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script>
+        // 评论管理系统
+        const AdminCommentSystem = {
+            // 模拟数据 - 按电影分组
+            mockData: [
+                {
+                    movieId: 1,
+                    movieTitle: '星际穿越',
+                    moviePoster: 'https://picsum.photos/32/48?random=1',
+                    comments: [
+                        {
+                            id: 1,
+                            username: 'user123',
+                            userEmail: 'user123@example.com',
+                            content: '这部科幻电影真的太震撼了！诺兰导演对时间和空间的诠释令人叹为观止。汉斯·季默的配乐更是锦上添花，强烈推荐！',
+                            timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+                        },
+                        {
+                            id: 6,
+                            username: 'movie_fan',
+                            userEmail: 'moviefan@example.com',
+                            content: '五维空间的设定太棒了，每次看都有新的发现。',
+                            timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+                        }
+                    ]
+                },
+                {
+                    movieId: 2,
+                    movieTitle: '盗梦空间',
+                    moviePoster: 'https://picsum.photos/32/48?random=2',
+                    comments: [
+                        {
+                            id: 2,
+                            username: 'lisi',
+                            userEmail: 'lisi@example.com',
+                            content: '梦境中的梦境，层层递进的设定非常巧妙。看完之后回味无穷，需要二刷才能完全理解所有细节。',
+                            timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+                        },
+                        {
+                            id: 7,
+                            username: 'dream_walker',
+                            userEmail: 'dream@example.com',
+                            content: '结尾的陀螺到底停没停？这个悬念太绝了。',
+                            timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+                        }
+                    ]
+                },
+                {
+                    movieId: 3,
+                    movieTitle: '泰坦尼克号',
+                    moviePoster: 'https://picsum.photos/32/48?random=3',
+                    comments: [
+                        {
+                            id: 3,
+                            username: 'zhangsan',
+                            userEmail: 'zhangsan@example.com',
+                            content: '经典的爱情故事，每次看都会被感动。Jack 和 Rose 的爱情故事让人难以忘怀，主题曲也超级好听。',
+                            timestamp: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
+                        }
+                    ]
+                },
+                {
+                    movieId: 4,
+                    movieTitle: '阿凡达',
+                    moviePoster: 'https://picsum.photos/32/48?random=4',
+                    comments: [
+                        {
+                            id: 4,
+                            username: 'wangwu',
+                            userEmail: 'wangwu@example.com',
+                            content: '视觉效果太棒了！潘多拉星球的构建令人惊叹，卡梅隆导演再次证明了他是科幻电影大师。',
+                            timestamp: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString()
+                        },
+                        {
+                            id: 8,
+                            username: 'avatar_lover',
+                            userEmail: 'avatar@example.com',
+                            content: 'IMAX 版本的体验绝对值得，3D 效果太震撼了。',
+                            timestamp: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString()
+                        },
+                        {
+                            id: 9,
+                            username: 'pandora',
+                            userEmail: 'pandora@example.com',
+                            content: '纳美人的文化设定很有意思，人与自然和谐共处的主题很有深度。',
+                            timestamp: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString()
+                        }
+                    ]
+                },
+                {
+                    movieId: 5,
+                    movieTitle: '沙丘',
+                    moviePoster: 'https://picsum.photos/32/48?random=5',
+                    comments: [
+                        {
+                            id: 5,
+                            username: 'chen666',
+                            userEmail: 'chen666@example.com',
+                            content: '维伦纽瓦导演的风格独特，电影的每一帧都像艺术品。虽然节奏较慢，但氛围营造得非常到位。',
+                            timestamp: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString()
+                        }
+                    ]
+                },
+                {
+                    movieId: 6,
+                    movieTitle: '肖申克的救赎',
+                    moviePoster: 'https://picsum.photos/32/48?random=6',
+                    comments: [
+                        {
+                            id: 10,
+                            username: 'hopeful',
+                            userEmail: 'hopeful@example.com',
+                            content: '影史经典！关于希望和自由的最好诠释，每次看都有新的感悟。',
+                            timestamp: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString()
+                        },
+                        {
+                            id: 11,
+                            username: 'movie_buff',
+                            userEmail: 'buff@example.com',
+                            content: '摩根·弗里曼的表演太棒了，台词句句经典。',
+                            timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+                        }
+                    ]
+                },
+                {
+                    movieId: 7,
+                    movieTitle: '千与千寻',
+                    moviePoster: 'https://picsum.photos/32/48?random=7',
+                    comments: [
+                        {
+                            id: 12,
+                            username: 'anime_lover',
+                            userEmail: 'anime@example.com',
+                            content: '宫崎骏的巅峰之作，想象力丰富，画面精美，音乐动人。',
+                            timestamp: new Date(Date.now() - 18 * 24 * 60 * 60 * 1000).toISOString()
+                        }
+                    ]
+                },
+                {
+                    movieId: 8,
+                    movieTitle: '霸王别姬',
+                    moviePoster: 'https://picsum.photos/32/48?random=8',
+                    comments: [
+                        {
+                            id: 13,
+                            username: 'china_film',
+                            userEmail: 'chinafilm@example.com',
+                            content: '华语电影的巅峰，张国荣的表演令人难忘，程蝶衣这个角色太经典了。',
+                            timestamp: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString()
+                        },
+                        {
+                            id: 14,
+                            username: 'opera_fan',
+                            userEmail: 'opera@example.com',
+                            content: '不疯魔不成活，这句台词道尽了一生的执着。',
+                            timestamp: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString()
+                        }
+                    ]
+                },
+                {
+                    movieId: 9,
+                    movieTitle: '这个杀手不太冷',
+                    moviePoster: 'https://picsum.photos/32/48?random=9',
+                    comments: [
+                        {
+                            id: 15,
+                            username: 'leon_fan',
+                            userEmail: 'leon@example.com',
+                            content: '让·雷诺和娜塔莉·波特曼的组合太完美了，大叔与萝莉的温情故事。',
+                            timestamp: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
+                        }
+                    ]
+                },
+                {
+                    movieId: 10,
+                    movieTitle: '海上钢琴师',
+                    moviePoster: 'https://picsum.photos/32/48?random=10',
+                    comments: [
+                        {
+                            id: 16,
+                            username: 'piano_music',
+                            userEmail: 'piano@example.com',
+                            content: '1900 的故事太感人了，宁愿与船共亡也不愿上岸，这是对音乐的纯粹热爱。',
+                            timestamp: new Date(Date.now() - 22 * 24 * 60 * 60 * 1000).toISOString()
+                        },
+                        {
+                            id: 17,
+                            username: 'classic_movie',
+                            userEmail: 'classic@example.com',
+                            content: '配乐太经典了，每一首都是杰作。',
+                            timestamp: new Date(Date.now() - 11 * 24 * 60 * 60 * 1000).toISOString()
+                        }
+                    ]
+                }
+            ],
+            
+            expandedMovieId: null,
+            deleteCommentId: null,
+            
+            init: function() {
+                this.renderTable();
+                this.setupDeleteModal();
+            },
+            
+            renderTable: function() {
+                const tbody = document.getElementById('commentsTableBody');
+                if (!tbody) return;
+                
+                tbody.innerHTML = '';
+                
+                if (this.mockData.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5">
+                                <div class="empty-state">
+                                    <i class="fas fa-comment-slash"></i>
+                                    <p>暂无评论数据</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                this.mockData.forEach(movieGroup => {
+                    // 电影行
+                    const movieRow = document.createElement('tr');
+                    movieRow.className = 'movie-row';
+                    movieRow.dataset.movieId = movieGroup.movieId;
+                    
+                    const latestComment = movieGroup.comments.length > 0 
+                        ? movieGroup.comments[movieGroup.comments.length - 1] 
+                        : null;
+                    const latestTime = latestComment ? this.getTimeAgo(latestComment.timestamp) : '-';
+                    
+                    movieRow.innerHTML = `
+                        <td>
+                            <i class="fas fa-chevron-right expand-icon" id="expand-icon-${movieGroup.movieId}"></i>
+                        </td>
+                        <td>
+                            <div class="movie-info">
+                                <img src="${movieGroup.moviePoster}" alt="${movieGroup.movieTitle}" class="movie-poster">
+                                <span class="movie-title">${movieGroup.movieTitle}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="comment-count-badge">${movieGroup.comments.length} 条评论</span>
+                        </td>
+                        <td style="color: var(--text-secondary); font-size: 0.85rem;">
+                            ${latestTime}
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-sm btn-delete" onclick="event.stopPropagation(); AdminCommentSystem.deleteAllComments(${movieGroup.movieId}, '${movieGroup.movieTitle}')">
+                                    <i class="fas fa-trash"></i> 清空
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    
+                    movieRow.addEventListener('click', () => {
+                        this.toggleExpand(movieGroup.movieId);
+                    });
+                    
+                    tbody.appendChild(movieRow);
+                    
+                    // 评论详情行
+                    const detailRow = document.createElement('tr');
+                    detailRow.className = 'comment-detail-row';
+                    detailRow.dataset.movieId = movieGroup.movieId;
+                    detailRow.id = `detail-${movieGroup.movieId}`;
+                    
+                    detailRow.innerHTML = `
+                        <td colspan="5">
+                            <div class="comment-list" id="comment-list-${movieGroup.movieId}">
+                                ${movieGroup.comments.map(comment => this.createCommentItem(comment)).join('')}
+                            </div>
+                        </td>
+                    `;
+                    
+                    tbody.appendChild(detailRow);
+                });
+            },
+            
+            createCommentItem: function(comment) {
+                const timeAgo = this.getTimeAgo(comment.timestamp);
+                const userInitial = comment.username.charAt(0).toUpperCase();
+                const contentPreview = comment.content.length > 80 
+                    ? comment.content.substring(0, 80) + '...' 
+                    : comment.content;
+                
+                return `
+                    <div class="comment-item" data-comment-id="${comment.id}">
+                        <div class="comment-left">
+                            <div class="comment-user-badge">${userInitial}</div>
+                            <div>
+                                <span class="comment-text">
+                                    <strong>${comment.username}</strong>：${contentPreview}
+                                </span>
+                                <span class="comment-time">${timeAgo}</span>
+                            </div>
+                        </div>
+                        <button class="btn-delete-small" onclick="AdminCommentSystem.showDeleteModal(${comment.id}, '${comment.content.replace(/'/g, "\\'")}')" title="删除评论">
+                            <i class="fas fa-trash"></i> 删除
+                        </button>
+                    </div>
+                `;
+            },
+            
+            toggleExpand: function(movieId) {
+                const detailRow = document.getElementById(`detail-${movieId}`);
+                const expandIcon = document.getElementById(`expand-icon-${movieId}`);
+                
+                if (this.expandedMovieId === movieId) {
+                    // 收起
+                    detailRow.classList.remove('visible');
+                    expandIcon.classList.remove('expanded');
+                    this.expandedMovieId = null;
+                } else {
+                    // 收起之前展开的
+                    if (this.expandedMovieId !== null) {
+                        const prevDetailRow = document.getElementById(`detail-${this.expandedMovieId}`);
+                        const prevIcon = document.getElementById(`expand-icon-${this.expandedMovieId}`);
+                        if (prevDetailRow) prevDetailRow.classList.remove('visible');
+                        if (prevIcon) prevIcon.classList.remove('expanded');
+                    }
+                    
+                    // 展开当前
+                    detailRow.classList.add('visible');
+                    expandIcon.classList.add('expanded');
+                    this.expandedMovieId = movieId;
+                }
+            },
+            
+            getTimeAgo: function(timestamp) {
+                const now = new Date();
+                const past = new Date(timestamp);
+                const diffInSeconds = Math.floor((now - past) / 1000);
+                
+                if (diffInSeconds < 60) {
+                    return '刚刚';
+                } else if (diffInSeconds < 3600) {
+                    return Math.floor(diffInSeconds / 60) + '分钟前';
+                } else if (diffInSeconds < 86400) {
+                    return Math.floor(diffInSeconds / 3600) + '小时前';
+                } else if (diffInSeconds < 86400 * 30) {
+                    return Math.floor(diffInSeconds / 86400) + '天前';
+                } else if (diffInSeconds < 86400 * 365) {
+                    return Math.floor(diffInSeconds / (86400 * 30)) + '个月前';
+                } else {
+                    return Math.floor(diffInSeconds / (86400 * 365)) + '年前';
+                }
+            },
+            
+            showDeleteModal: function(commentId, content) {
+                this.deleteCommentId = commentId;
+                const preview = document.getElementById('deleteCommentPreview');
+                if (preview) {
+                    preview.textContent = '"' + content.substring(0, 50) + (content.length > 50 ? '...' : '') + '"';
+                }
+                
+                const modal = document.getElementById('deleteConfirmModal');
+                if (modal) {
+                    modal.classList.add('active');
+                }
+            },
+            
+            hideDeleteModal: function() {
+                this.deleteCommentId = null;
+                const modal = document.getElementById('deleteConfirmModal');
+                if (modal) {
+                    modal.classList.remove('active');
+                }
+            },
+            
+            deleteComment: function() {
+                if (this.deleteCommentId === null) return;
+                
+                // 查找并删除评论
+                for (let i = 0; i < this.mockData.length; i++) {
+                    const commentIndex = this.mockData[i].comments.findIndex(c => c.id === this.deleteCommentId);
+                    if (commentIndex !== -1) {
+                        this.mockData[i].comments.splice(commentIndex, 1);
+                        
+                        // 如果该电影没有评论了，移除该电影行
+                        if (this.mockData[i].comments.length === 0) {
+                            this.mockData.splice(i, 1);
+                        }
+                        break;
+                    }
+                }
+                
+                this.renderTable();
+                
+                // 恢复展开状态
+                if (this.expandedMovieId !== null) {
+                    const detailRow = document.getElementById(`detail-${this.expandedMovieId}`);
+                    const expandIcon = document.getElementById(`expand-icon-${this.expandedMovieId}`);
+                    if (detailRow) detailRow.classList.add('visible');
+                    if (expandIcon) expandIcon.classList.add('expanded');
+                }
+                
+                this.hideDeleteModal();
+                alert('评论已删除');
+            },
+            
+            deleteAllComments: function(movieId, movieTitle) {
+                if (confirm(`确定要清空《${movieTitle}》的所有评论吗？`)) {
+                    const index = this.mockData.findIndex(m => m.movieId === movieId);
+                    if (index !== -1) {
+                        this.mockData.splice(index, 1);
+                        this.renderTable();
+                        alert('已清空该电影的所有评论');
+                    }
+                }
+            },
+            
+            setupDeleteModal: function() {
+                const cancelBtn = document.getElementById('cancelDeleteBtn');
+                const confirmBtn = document.getElementById('confirmDeleteBtn');
+                const modal = document.getElementById('deleteConfirmModal');
+                
+                if (cancelBtn) {
+                    cancelBtn.addEventListener('click', () => {
+                        this.hideDeleteModal();
+                    });
+                }
+                
+                if (confirmBtn) {
+                    confirmBtn.addEventListener('click', () => {
+                        this.deleteComment();
+                    });
+                }
+                
+                if (modal) {
+                    modal.addEventListener('click', (e) => {
+                        if (e.target === modal) {
+                            this.hideDeleteModal();
+                        }
+                    });
+                }
+            },
+            
+            search: function() {
+                const input = document.getElementById('searchInput');
+                const filter = input.value.toLowerCase();
+                const movieRows = document.querySelectorAll('.movie-row');
+                
+                movieRows.forEach(row => {
+                    const movieTitle = row.querySelector('.movie-title').textContent.toLowerCase();
+                    const movieId = row.dataset.movieId;
+                    
+                    // 检查该电影的评论中是否包含搜索词
+                    const movieGroup = this.mockData.find(m => m.movieId == movieId);
+                    let hasMatch = movieTitle.indexOf(filter) > -1;
+                    
+                    if (!hasMatch && movieGroup) {
+                        hasMatch = movieGroup.comments.some(c => 
+                            c.username.toLowerCase().indexOf(filter) > -1 || 
+                            c.content.toLowerCase().indexOf(filter) > -1
+                        );
+                    }
+                    
+                    if (hasMatch) {
+                        row.style.display = '';
+                        const detailRow = document.getElementById(`detail-${movieId}`);
+                        if (detailRow) {
+                            detailRow.style.display = this.expandedMovieId == movieId ? '' : 'none';
+                        }
+                    } else {
+                        row.style.display = 'none';
+                        const detailRow = document.getElementById(`detail-${movieId}`);
+                        if (detailRow) detailRow.style.display = 'none';
+                    }
+                });
+            }
+        };
+        
+        // 检查管理员权限
+        document.addEventListener('DOMContentLoaded', function() {
+            const userRole = localStorage.getItem('userRole');
+            if (userRole !== 'admin') {
+                alert('请先登录管理员账号');
+                window.location.href = '../user/login.html';
+            }
+            
+            // 初始化评论管理系统
+            AdminCommentSystem.init();
+        });
+    </script>
+</body>
+</html>

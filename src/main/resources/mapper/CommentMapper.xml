@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.dao.CommentMapper">
+    
+    <!-- 结果映射（包含关联用户和电影） -->
+    <resultMap id="CommentResultMap" type="Comment">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="movieId" column="movie_id"/>
+        <result property="content" column="content"/>
+        <result property="createTime" column="create_time"/>
+        <result property="status" column="status"/>
+        <!-- 关联用户映射 -->
+        <association property="user" javaType="User">
+            <id property="id" column="user_id"/>
+            <result property="username" column="username"/>
+            <result property="avatar" column="avatar"/>
+        </association>
+        <!-- 关联电影映射 -->
+        <association property="movie" javaType="Movie">
+            <id property="id" column="movie_id"/>
+            <result property="title" column="movie_title"/>
+            <result property="poster" column="movie_poster"/>
+        </association>
+    </resultMap>
+    
+    <!-- 通用查询列 -->
+    <sql id="Base_Column_List">
+        c.id, c.user_id, c.movie_id, c.content, c.create_time, c.status, u.username, u.avatar, m.title as movie_title, m.poster as movie_poster
+    </sql>
+    
+    <!-- 根据 ID 查询评论 -->
+    <select id="findById" resultMap="CommentResultMap">
+        SELECT
+            <include refid="Base_Column_List"/>
+        FROM comment c
+        LEFT JOIN user u ON c.user_id = u.id
+        LEFT JOIN movie m ON c.movie_id = m.id
+        WHERE c.id = #{id}
+    </select>
+
+    <!-- 查询所有评论（管理后台使用） -->
+    <select id="findAllForAdmin" resultMap="CommentResultMap">
+        SELECT
+            <include refid="Base_Column_List"/>
+        FROM comment c
+        LEFT JOIN user u ON c.user_id = u.id
+        LEFT JOIN movie m ON c.movie_id = m.id
+        ORDER BY c.movie_id ASC, c.create_time DESC
+    </select>
+
+    <!-- 插入评论 -->
+    <select id="findByMovieId" parameterType="int" resultMap="CommentResultMap">
+        SELECT
+            <include refid="Base_Column_List"/>
+        FROM comment c
+        LEFT JOIN user u ON c.user_id = u.id
+        LEFT JOIN movie m ON c.movie_id = m.id
+        WHERE c.movie_id = #{movieId} AND c.status = 1
+        ORDER BY c.create_time DESC
+    </select>
+    
+    <!-- 根据用户 ID 查询评论 -->
+    <select id="findByUserId" parameterType="int" resultMap="CommentResultMap">
+        SELECT
+            <include refid="Base_Column_List"/>
+        FROM comment c
+        LEFT JOIN user u ON c.user_id = u.id
+        LEFT JOIN movie m ON c.movie_id = m.id
+        WHERE c.user_id = #{userId} AND c.status = 1
+        ORDER BY c.create_time DESC
+    </select>
+    
+    <!-- 插入评论 -->
+    <insert id="insert" parameterType="Comment" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO comment (
+            user_id, movie_id, content, status
+        ) VALUES (
+            #{userId}, #{movieId}, #{content}, #{status}
+        )
+    </insert>
+    
+    <!-- 删除评论 -->
+    <delete id="deleteById" parameterType="int">
+        DELETE FROM comment WHERE id = #{id}
+    </delete>
+    
+    <!-- 根据电影 ID 删除评论 -->
+    <delete id="deleteByMovieId" parameterType="int">
+        DELETE FROM comment WHERE movie_id = #{movieId}
+    </delete>
+    
+    <!-- 获取电影评论总数 -->
+    <select id="countByMovieId" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM comment WHERE movie_id = #{movieId} AND status = 1
+    </select>
+    
+</mapper>

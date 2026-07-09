@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>添加电影 - Movie-Muse</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --sidebar-bg: #1a1a2e;
+            --sidebar-hover: #16213e;
+            --primary-color: #9333ea;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: url('../images/mark-basarab-1OtUkD_8svc-unsplash.jpg') center center / cover no-repeat;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(243, 244, 246, 0.7);
+            z-index: 0;
+        }
+
+        body > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: var(--sidebar-bg);
+            color: white;
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        .sidebar .logo {
+            padding: 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar .logo h1 {
+            font-size: 40px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #9333ea, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 1rem;
+        }
+
+        .sidebar-nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 4px;
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: #9ca3af;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-nav a:hover {
+            background: var(--sidebar-hover);
+            color: white;
+        }
+
+        .sidebar-nav a.active {
+            background: rgba(147, 51, 234, 0.2);
+            color: #a855f7;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .sidebar-nav a.active i {
+            color: #a855f7;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Top Navbar */
+        .top-nav {
+            background: white;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .top-nav .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .top-nav .nav-left a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.3s ease;
+        }
+
+        .top-nav .nav-left a:hover {
+            color: var(--primary-color);
+        }
+
+        .top-nav .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .top-nav .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            background: rgba(147, 51, 234, 0.08);
+            border-radius: 25px;
+        }
+
+        .top-nav .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), #a855f7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .top-nav .user-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Page Content */
+        .page-content {
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        /* Form Card */
+        .form-card {
+            width: 100%;
+            max-width: 700px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 2.5rem;
+        }
+
+        .form-card h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* Form Group */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="url"],
+        .form-group input[type="number"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+            color: var(--text-primary);
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group input[type="url"]:focus,
+        .form-group input[type="number"]:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(147, 51, 234, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+            line-height: 1.6;
+        }
+
+        .form-group select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 16px;
+            padding-right: 40px;
+        }
+
+        .form-group .hint {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.35rem;
+        }
+
+        /* Buttons */
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), #a855f7);
+            color: white;
+            box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(147, 51, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(107, 114, 128, 0.1);
+            color: var(--text-secondary);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(107, 114, 128, 0.2);
+            color: var(--text-primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .sidebar-nav ul {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .page-content {
+                padding: 1rem;
+            }
+
+            .form-card {
+                padding: 1.5rem;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <h1>Movie-Muse</h1>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li>
+                    <a href="admin-dashboard.html">
+                        <i class="fas fa-tachometer-alt"></i> 控制台
+                    </a>
+                </li>
+                <li>
+                    <a href="admin-movie-list.html">
+                        <i class="fas fa-film"></i> 电影管理
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fas fa-tags"></i> 分类管理
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fas fa-users"></i> 用户管理
+                    </a>
+                </li>
+                <li>
+                    <a href="admin-comments.html">
+                        <i class="fas fa-comments"></i> 评论管理
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Navbar -->
+        <header class="top-nav">
+            <div class="nav-left">
+                <a href="../index.html">
+                    <i class="fas fa-home"></i> 返回首页
+                </a>
+            </div>
+            <div class="nav-right">
+                <div class="user-info">
+                    <div class="user-avatar">A</div>
+                    <span class="user-name">管理员</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <main class="page-content">
+            <div class="form-card">
+                <h1>添加新电影</h1>
+
+                <form id="movieForm">
+                    <!-- Title -->
+                    <div class="form-group">
+                        <label for="title">电影标题</label>
+                        <input type="text" id="title" name="title" placeholder="请输入电影标题" required>
+                    </div>
+
+                    <!-- Poster URL & Year -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="poster">海报链接</label>
+                            <input type="url" id="poster" name="poster" placeholder="https://...">
+                            <div class="hint">建议尺寸: 300×450px</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="year">上映年份</label>
+                            <input type="number" id="year" name="year" min="1900" max="2099" placeholder="2024">
+                        </div>
+                    </div>
+
+                    <!-- Director & Cast -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="director">导演</label>
+                            <input type="text" id="director" name="director" placeholder="请输入导演姓名">
+                        </div>
+                        <div class="form-group">
+                            <label for="cast">主演</label>
+                            <input type="text" id="cast" name="cast" placeholder="多个主演用逗号分隔">
+                        </div>
+                    </div>
+
+                    <!-- Genre -->
+                    <div class="form-group">
+                        <label for="genre">类型</label>
+                        <select id="genre" name="genre" required>
+                            <option value="">请选择类型</option>
+                            <option value="动作">动作</option>
+                            <option value="爱情">爱情</option>
+                            <option value="科幻">科幻</option>
+                            <option value="喜剧">喜剧</option>
+                            <option value="悬疑">悬疑</option>
+                            <option value="恐怖">恐怖</option>
+                            <option value="动画">动画</option>
+                            <option value="纪录片">纪录片</option>
+                            <option value="冒险">冒险</option>
+                            <option value="犯罪">犯罪</option>
+                            <option value="剧情">剧情</option>
+                        </select>
+                    </div>
+
+                    <!-- Synopsis -->
+                    <div class="form-group">
+                        <label for="synopsis">简介</label>
+                        <textarea id="synopsis" name="synopsis" placeholder="请输入电影简介..."></textarea>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="form-actions">
+                        <a href="admin-movie-list.html" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> 取消
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 保存
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Form submission
+        document.getElementById('movieForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('电影信息已保存！');
+            window.location.href = 'admin-movie-list.html';
+        });
+    </script>
+</body>
+</html>

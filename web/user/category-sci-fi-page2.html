@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科幻电影 - 第 2 页 - Movie-Muse</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            base: '#141414',
+                            card: '#1a1a2e',
+                            border: '#2a2a3a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #141414;
+            min-height: 100vh;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('../images/pawel-czerwinski-prMn9KINLtI-unsplash.jpg') center center / cover no-repeat;
+            z-index: -1;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: -1;
+        }
+
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ffffff;
+            text-decoration: none;
+            margin-right: 40px;
+            letter-spacing: 1px;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 15px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: #ffffff;
+        }
+
+        .category-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 100px 40px 60px;
+        }
+
+        .category-header {
+            margin-bottom: 40px;
+        }
+
+        .category-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .category-title i {
+            color: #a855f7;
+        }
+
+        .category-description {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.1rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #ffffff;
+        }
+
+        .movies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .movie-card {
+            background: rgba(30, 37, 64, 0.6);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .movie-card:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            border-color: rgba(168, 85, 247, 0.3);
+        }
+
+        .movie-card .poster-wrap {
+            position: relative;
+            aspect-ratio: 2/3;
+            overflow: hidden;
+        }
+
+        .movie-card .poster-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .movie-card:hover .poster-wrap img {
+            transform: scale(1.08);
+        }
+
+        .movie-card .rating-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(250, 204, 21, 0.9);
+            color: #1a1a1a;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .movie-card .card-info {
+            padding: 12px;
+        }
+
+        .movie-card .card-title {
+            font-weight: 600;
+            color: #ffffff;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .movie-card .card-meta {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .pagination-btn {
+            padding: 10px 18px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .pagination-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(168, 85, 247, 0.5);
+        }
+
+        .pagination-btn.active {
+            background: linear-gradient(135deg, #9333ea, #a855f7);
+            border-color: #a855f7;
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+            .category-content {
+                padding: 80px 20px 40px;
+            }
+
+            .category-title {
+                font-size: 1.8rem;
+            }
+
+            .movies-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="fixed top-0 left-0 right-0 z-50" style="background: transparent; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+        <div class="nav-container">
+            <a href="userindex.html" class="logo">Movie-Muse</a>
+            <div class="hidden md:flex items-center gap-8">
+                <a href="userindex.html" class="nav-link">首页</a>
+                <a href="category-list.html" class="nav-link">电影分类</a>
+                <a href="profile.html" class="nav-link">个人中心</a>
+                <a href="profile.html" class="bg-white/20 hover:bg-white/30 text-white px-5 py-2 rounded-full font-medium transition-colors backdrop-blur-sm border border-white/30" id="navUsername">用户</a>
+                <button onclick="logout()" class="bg-white/20 hover:bg-white/30 text-white px-5 py-2 rounded-full font-medium transition-colors backdrop-blur-sm border border-white/30">退出登录</button>
+            </div>
+            <button id="mobileMenuBtn" class="md:hidden text-white text-xl" aria-label="菜单">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <div id="mobileMenu" class="hidden md:hidden mt-4 pb-4 border-t border-white/10 pt-4">
+            <div class="flex flex-col gap-4">
+                <a href="userindex.html" class="nav-link">首页</a>
+                <a href="category-list.html" class="nav-link">电影分类</a>
+                <a href="profile.html" class="nav-link">个人中心</a>
+                <a href="profile.html" class="bg-white/20 hover:bg-white/30 text-white px-5 py-2 rounded-full font-medium text-center transition-colors backdrop-blur-sm border border-white/30" id="mobileNavUsername">用户</a>
+                <button onclick="logout()" class="bg-white/20 hover:bg-white/30 text-white px-5 py-2 rounded-full font-medium transition-colors backdrop-blur-sm border border-white/30">退出登录</button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="category-content">
+    <a href="category-list.html" class="back-link">
+        <i class="fas fa-arrow-left"></i> 返回分类列表
+    </a>
+
+    <div class="category-header">
+        <h1 class="category-title">
+            <i class="fas fa-rocket"></i>
+            科幻电影
+        </h1>
+        <p class="category-description">探索未来世界、外星文明和科技奇观的想象之旅</p>
+    </div>
+
+    <div class="movies-grid">
+        <a href="movie-detail.html" class="movie-card">
+            <div class="poster-wrap">
+                <img src="https://picsum.photos/300/450?random=101" alt="星际迷航">
+                <div class="rating-badge"><i class="fas fa-star"></i> 8.2</div>
+            </div>
+            <div class="card-info">
+                <h3 class="card-title">星际迷航</h3>
+                <p class="card-meta">科幻 · 2009</p>
+            </div>
+        </a>
+
+        <a href="movie-detail.html" class="movie-card">
+            <div class="poster-wrap">
+                <img src="https://picsum.photos/300/450?random=102" alt="普罗米修斯">
+                <div class="rating-badge"><i class="fas fa-star"></i> 7.9</div>
+            </div>
+            <div class="card-info">
+                <h3 class="card-title">普罗米修斯</h3>
+                <p class="card-meta">科幻 · 2012</p>
+            </div>
+        </a>
+
+        <a href="movie-detail.html" class="movie-card">
+            <div class="poster-wrap">
+                <img src="https://picsum.photos/300/450?random=103" alt="湮灭">
+                <div class="rating-badge"><i class="fas fa-star"></i> 7.8</div>
+            </div>
+            <div class="card-info">
+                <h3 class="card-title">湮灭</h3>
+                <p class="card-meta">科幻 · 2018</p>
+            </div>
+        </a>
+
+        <a href="movie-detail.html" class="movie-card">
+            <div class="poster-wrap">
+                <img src="https://picsum.photos/300/450?random=104" alt="机械姬">
+                <div class="rating-badge"><i class="fas fa-star"></i> 8.0</div>
+            </div>
+            <div class="card-info">
+                <h3 class="card-title">机械姬</h3>
+                <p class="card-meta">科幻 · 2014</p>
+            </div>
+        </a>
+
+        <a href="movie-detail.html" class="movie-card">
+            <div class="poster-wrap">
+                <img src="https://picsum.photos/300/450?random=105" alt="超能陆战队">
+                <div class="rating-badge"><i class="fas fa-star"></i> 8.4</div>
+            </div>
+            <div class="card-info">
+                <h3 class="card-title">超能陆战队</h3>
+                <p class="card-meta">科幻 · 2014</p>
+            </div>
+        </a>
+
+        <a href="movie-detail.html" class="movie-card">
+            <div class="poster-wrap">
+                <img src="https://picsum.photos/300/450?random=106" alt="星球大战">
+                <div class="rating-badge"><i class="fas fa-star"></i> 8.7</div>
+            </div>
+            <div class="card-info">
+                <h3 class="card-title">星球大战</h3>
+                <p class="card-meta">科幻 · 1977</p>
+            </div>
+        </a>
+
+        <a href="movie-detail.html" class="movie-card">
+            <div class="poster-wrap">
+                <img src="https://picsum.photos/300/450?random=107" alt="回到未来">
+                <div class="rating-badge"><i class="fas fa-star"></i> 8.8</div>
+            </div>
+            <div class="card-info">
+                <h3 class="card-title">回到未来</h3>
+                <p class="card-meta">科幻 · 1985</p>
+            </div>
+        </a>
+
+        <a href="movie-detail.html" class="movie-card">
+            <div class="poster-wrap">
+                <img src="https://picsum.photos/300/450?random=108" alt="人工智能">
+                <div class="rating-badge"><i class="fas fa-star"></i> 8.1</div>
+            </div>
+            <div class="card-info">
+                <h3 class="card-title">人工智能</h3>
+                <p class="card-meta">科幻 · 2001</p>
+            </div>
+        </a>
+
+        <a href="movie-detail.html" class="movie-card">
+            <div class="poster-wrap">
+                <img src="https://picsum.photos/300/450?random=109" alt="少数派报告">
+                <div class="rating-badge"><i class="fas fa-star"></i> 7.9</div>
+            </div>
+            <div class="card-info">
+                <h3 class="card-title">少数派报告</h3>
+                <p class="card-meta">科幻 · 2002</p>
+            </div>
+        </a>
+
+        <a href="movie-detail.html" class="movie-card">
+            <div class="poster-wrap">
+                <img src="https://picsum.photos/300/450?random=110" alt="源代码">
+                <div class="rating-badge"><i class="fas fa-star"></i> 8.0</div>
+            </div>
+            <div class="card-info">
+                <h3 class="card-title">源代码</h3>
+                <p class="card-meta">科幻 · 2011</p>
+            </div>
+        </a>
+
+        <a href="movie-detail.html" class="movie-card">
+            <div class="poster-wrap">
+                <img src="https://picsum.photos/300/450?random=111" alt="月球">
+                <div class="rating-badge"><i class="fas fa-star"></i> 7.9</div>
+            </div>
+            <div class="card-info">
+                <h3 class="card-title">月球</h3>
+                <p class="card-meta">科幻 · 2009</p>
+            </div>
+        </a>
+
+        <a href="movie-detail.html" class="movie-card">
+            <div class="poster-wrap">
+                <img src="https://picsum.photos/300/450?random=112" alt="时间机器">
+                <div class="rating-badge"><i class="fas fa-star"></i> 7.6</div>
+            </div>
+            <div class="card-info">
+                <h3 class="card-title">时间机器</h3>
+                <p class="card-meta">科幻 · 2002</p>
+            </div>
+        </a>
+    </div>
+
+    <div class="pagination">
+        <a href="category-sci-fi.html" class="pagination-btn">
+            <i class="fas fa-chevron-left"></i> 上一页
+        </a>
+        <a href="category-sci-fi.html" class="pagination-btn">1</a>
+        <a href="category-sci-fi-page2.html" class="pagination-btn active">2</a>
+        <a href="#" class="pagination-btn" disabled>
+            下一页 <i class="fas fa-chevron-right"></i>
+        </a>
+    </div>
+</main>
+
+<script>
+    function logout() {
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('username');
+        window.location.href = '../index.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const username = localStorage.getItem('username');
+        if (username) {
+            const navUsername = document.getElementById('navUsername');
+            const mobileNavUsername = document.getElementById('mobileNavUsername');
+            if (navUsername) navUsername.textContent = username;
+            if (mobileNavUsername) mobileNavUsername.textContent = username;
+        }
+    });
+
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', function() {
+            mobileMenu.classList.toggle('hidden');
+        });
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电影分类 - Movie-Muse</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            base: '#141414',
+                            card: '#1a1a2e',
+                            border: '#2a2a3a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #141414;
+            min-height: 100vh;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('../images/pawel-czerwinski-prMn9KINLtI-unsplash.jpg') center center / cover no-repeat;
+            z-index: -1;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: -1;
+        }
+
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ffffff;
+            text-decoration: none;
+            margin-right: 40px;
+            letter-spacing: 1px;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 15px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: #ffffff;
+        }
+
+        .category-page {
+            display: flex;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 100px 40px 60px;
+            gap: 40px;
+        }
+
+        /* Sidebar */
+        .category-sidebar {
+            width: 280px;
+            flex-shrink: 0;
+            background: rgba(30, 37, 64, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            height: fit-content;
+            position: sticky;
+            top: 120px;
+        }
+
+        .sidebar-title {
+            color: #ffffff;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+        }
+
+        .category-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .category-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .category-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            transform: translateX(5px);
+        }
+
+        .category-item.active {
+            background: linear-gradient(135deg, #9333ea, #a855f7);
+            color: #ffffff;
+            border-color: rgba(168, 85, 247, 0.3);
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+        }
+
+        .category-count {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        /* Content */
+        .category-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .category-movies-section {
+            margin-bottom: 20px;
+            scroll-margin-top: 100px;
+        }
+
+        .category-movies-section .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .category-movies-section .section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .category-movies-section .section-desc {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.95rem;
+            margin: 5px 0 0 35px;
+        }
+
+        .view-all-btn {
+            color: #a855f7;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            padding: 8px 16px;
+            border-radius: 8px;
+            background: rgba(168, 85, 247, 0.1);
+        }
+
+        .view-all-btn:hover {
+            background: rgba(168, 85, 247, 0.2);
+            transform: translateX(5px);
+        }
+
+        .movies-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+        }
+
+        .movie-card {
+            background: rgba(30, 37, 64, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            background: rgba(30, 30, 50, 0.8);
+            border-color: rgba(168, 85, 247, 0.3);
+        }
+
+        .movie-card .poster-wrap {
+            position: relative;
+            width: 100%;
+            padding-top: 150%;
+            overflow: hidden;
+        }
+
+        .movie-card .poster-wrap img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .movie-card:hover .poster-wrap img {
+            transform: scale(1.05);
+        }
+
+        .movie-card .rating-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(250, 204, 21, 0.9);
+            color: #1a1a1a;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .movie-card .card-info {
+            padding: 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .movie-card .card-title {
+            font-weight: 600;
+            color: #ffffff;
+            font-size: 1.05rem;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .movie-card .card-desc {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.65);
+            line-height: 1.5;
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .movie-card .card-meta {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            margin: 60px 0;
+        }
+
+        @media (max-width: 1200px) {
+            .category-page {
+                padding: 100px 20px 40px;
+            }
+
+            .category-sidebar {
+                width: 220px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .category-page {
+                flex-direction: column;
+                padding: 80px 15px 30px;
+            }
+
+            .category-sidebar {
+                width: 100%;
+                position: static;
+            }
+
+            .movies-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="fixed top-0 left-0 right-0 z-50" style="background: transparent; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+        <div class="nav-container">
+            <a href="userindex.html" class="logo">Movie-Muse</a>
+            <div class="hidden md:flex items-center gap-8">
+                <a href="userindex.html" class="nav-link">首页</a>
+                <a href="category-list.html" class="nav-link">电影分类</a>
+                <a href="profile.html" class="nav-link">个人中心</a>
+                <a href="profile.html" class="bg-white/20 hover:bg-white/30 text-white px-5 py-2 rounded-full font-medium transition-colors backdrop-blur-sm border border-white/30" id="navUsername">用户</a>
+                <button onclick="logout()" class="bg-white/20 hover:bg-white/30 text-white px-5 py-2 rounded-full font-medium transition-colors backdrop-blur-sm border border-white/30">退出登录</button>
+            </div>
+            <button id="mobileMenuBtn" class="md:hidden text-white text-xl" aria-label="菜单">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <div id="mobileMenu" class="hidden md:hidden mt-4 pb-4 border-t border-white/10 pt-4">
+            <div class="flex flex-col gap-4">
+                <a href="userindex.html" class="nav-link">首页</a>
+                <a href="category-list.html" class="nav-link">电影分类</a>
+                <a href="profile.html" class="nav-link">个人中心</a>
+                <a href="profile.html" class="bg-white/20 hover:bg-white/30 text-white px-5 py-2 rounded-full font-medium text-center transition-colors backdrop-blur-sm border border-white/30" id="mobileNavUsername">用户</a>
+                <button onclick="logout()" class="bg-white/20 hover:bg-white/30 text-white px-5 py-2 rounded-full font-medium transition-colors backdrop-blur-sm border border-white/30">退出登录</button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<div class="category-page">
+    <!-- Sidebar -->
+    <aside class="category-sidebar">
+        <h2 class="sidebar-title"><i class="fas fa-th-large" style="margin-right: 10px;"></i>电影分类</h2>
+        <div class="category-list">
+            <a href="#sci-fi-section" class="category-item active">
+                <span><i class="fas fa-rocket" style="margin-right: 10px;"></i>科幻</span>
+                <span class="category-count">24</span>
+            </a>
+            <a href="#action-section" class="category-item">
+                <span><i class="fas fa-explosion" style="margin-right: 10px;"></i>动作</span>
+                <span class="category-count">36</span>
+            </a>
+            <a href="#romance-section" class="category-item">
+                <span><i class="fas fa-heart" style="margin-right: 10px;"></i>爱情</span>
+                <span class="category-count">18</span>
+            </a>
+            <a href="#comedy-section" class="category-item">
+                <span><i class="fas fa-laugh" style="margin-right: 10px;"></i>喜剧</span>
+                <span class="category-count">22</span>
+            </a>
+            <a href="#mystery-section" class="category-item">
+                <span><i class="fas fa-search" style="margin-right: 10px;"></i>悬疑</span>
+                <span class="category-count">15</span>
+            </a>
+            <a href="#horror-section" class="category-item">
+                <span><i class="fas fa-ghost" style="margin-right: 10px;"></i>恐怖</span>
+                <span class="category-count">12</span>
+            </a>
+            <a href="#animation-section" class="category-item">
+                <span><i class="fas fa-film" style="margin-right: 10px;"></i>动画</span>
+                <span class="category-count">20</span>
+            </a>
+            <a href="#drama-section" class="category-item">
+                <span><i class="fas fa-theater-masks" style="margin-right: 10px;"></i>剧情</span>
+                <span class="category-count">30</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Content -->
+    <main class="category-content">
+        <!-- 科幻电影区域 -->
+        <section id="sci-fi-section" class="category-movies-section">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-rocket" style="margin-right: 15px; color: #667eea;"></i>科幻电影</h2>
+                <p class="section-desc">探索未来世界、外星文明和科技奇观的想象之旅</p>
+                <a href="category-sci-fi.html" class="view-all-btn">查看全部 <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="movies-grid">
+                <a href="movie-detail.html" class="movie-card">
+                    <div class="poster-wrap">
+                        <img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&h=1200&fit=crop&q=80" alt="星际穿越">
+                        <div class="rating-badge"><i class="fas fa-star"></i> 9.2</div>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">星际穿越</h3>
+                        <p class="card-desc">在地球环境恶化、人类面临生存危机的背景下，一群宇航员穿越虫洞寻找新家园的史诗级科幻冒险。</p>
+                        <div class="card-meta">
+                            <span>科幻 · 2014</span>
+                            <span>169 分钟</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="movie-detail.html" class="movie-card">
+                    <div class="poster-wrap">
+                        <img src="https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=800&h=1200&fit=crop&q=80" alt="阿凡达">
+                        <div class="rating-badge"><i class="fas fa-star"></i> 8.7</div>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">阿凡达</h3>
+                        <p class="card-desc">人类来到潘多拉星球开采稀有矿产，残疾军人杰克通过阿凡达化身与纳美人接触并融入其中。</p>
+                        <div class="card-meta">
+                            <span>科幻 · 2009</span>
+                            <span>162 分钟</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="movie-detail.html" class="movie-card">
+                    <div class="poster-wrap">
+                        <img src="https://images.unsplash.com/photo-1541963463532-d68292c34b19?w=800&h=1200&fit=crop&q=80" alt="沙丘">
+                        <div class="rating-badge"><i class="fas fa-star"></i> 8.5</div>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">沙丘</h3>
+                        <p class="card-desc">保罗·厄崔迪家族被派往沙漠星球厄拉科斯，他必须面对家族背叛和命运预言的史诗科幻巨作。</p>
+                        <div class="card-meta">
+                            <span>科幻 · 2021</span>
+                            <span>155 分钟</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="movie-detail.html" class="movie-card">
+                    <div class="poster-wrap">
+                        <img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=800&h=1200&fit=crop&q=80" alt="降临">
+                        <div class="rating-badge"><i class="fas fa-star"></i> 8.0</div>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">降临</h3>
+                        <p class="card-desc">语言学家与外星人交流，试图阻止全球战争发生的硬核科幻作品。</p>
+                        <div class="card-meta">
+                            <span>科幻 · 2016</span>
+                            <span>116 分钟</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="movie-detail.html" class="movie-card">
+                    <div class="poster-wrap">
+                        <img src="https://images.unsplash.com/photo-1535016120720-40c6874c3b13?w=800&h=1200&fit=crop&q=80" alt="银翼杀手 2049">
+                        <div class="rating-badge"><i class="fas fa-star"></i> 8.8</div>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">银翼杀手 2049</h3>
+                        <p class="card-desc">在未来世界中，复制人 K 发现了一个埋藏多年的秘密，为了寻找真相而展开了一场冒险。</p>
+                        <div class="card-meta">
+                            <span>科幻 · 2017</span>
+                            <span>164 分钟</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="movie-detail.html" class="movie-card">
+                    <div class="poster-wrap">
+                        <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&h=1200&fit=crop&q=80" alt="黑客帝国">
+                        <div class="rating-badge"><i class="fas fa-star"></i> 9.0</div>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">黑客帝国</h3>
+                        <p class="card-desc">一名网络黑客发现，他所生活的世界其实是由人工智能控制的虚拟世界，于是加入了反抗军。</p>
+                        <div class="card-meta">
+                            <span>科幻 · 1999</span>
+                            <span>136 分钟</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- 动作电影区域 -->
+        <section id="action-section" class="category-movies-section">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-explosion" style="margin-right: 15px; color: #f56565;"></i>动作电影</h2>
+                <p class="section-desc">惊险刺激的打斗、枪战和追逐，点燃你的热血</p>
+                <a href="#" class="view-all-btn" onclick="alert('更多分类页面即将上线'); return false;">查看全部 <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="movies-grid">
+                <a href="movie-detail.html" class="movie-card">
+                    <div class="poster-wrap">
+                        <img src="https://images.unsplash.com/photo-1616530940355-351fabd9524b?w=800&h=1200&fit=crop&q=80" alt="盗梦空间">
+                        <div class="rating-badge"><i class="fas fa-star"></i> 9.1</div>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">盗梦空间</h3>
+                        <p class="card-desc">一名专门窃取他人梦境秘密的盗贼，接受了一项特殊任务：将想法植入目标的潜意识中。</p>
+                        <div class="card-meta">
+                            <span>动作 · 2010</span>
+                            <span>148 分钟</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="movie-detail.html" class="movie-card">
+                    <div class="poster-wrap">
+                        <img src="https://images.unsplash.com/photo-1560130958-f7e832f70950?w=800&h=1200&fit=crop&q=80" alt="复仇者联盟 4">
+                        <div class="rating-badge"><i class="fas fa-fire"></i> 热门</div>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">复仇者联盟 4</h3>
+                        <p class="card-desc">灭霸消灭了宇宙一半生命后，复仇者联盟必须集结剩余力量，逆转时空改写命运的终局之战。</p>
+                        <div class="card-meta">
+                            <span>动作 · 2019</span>
+                            <span>181 分钟</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="movie-detail.html" class="movie-card">
+                    <div class="poster-wrap">
+                        <img src="https://images.unsplash.com/photo-1596727147705-54a9d0832898?w=800&h=1200&fit=crop&q=80" alt="疾速追杀">
+                        <div class="rating-badge"><i class="fas fa-star"></i> 8.6</div>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">疾速追杀</h3>
+                        <p class="card-desc">一名退休杀手为爱犬复仇，单枪匹马对抗整个俄罗斯黑帮的硬核动作片。</p>
+                        <div class="card-meta">
+                            <span>动作 · 2014</span>
+                            <span>101 分钟</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="movie-detail.html" class="movie-card">
+                    <div class="poster-wrap">
+                        <img src="https://images.unsplash.com/photo-1533488765986-d8931f86d937?w=800&h=1200&fit=crop&q=80" alt="碟中谍">
+                        <div class="rating-badge"><i class="fas fa-star"></i> 8.4</div>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">碟中谍</h3>
+                        <p class="card-desc">IMF 特工伊森·亨特执行不可能的任务，阻止核武器交易，揭开内奸真相。</p>
+                        <div class="card-meta">
+                            <span>动作 · 1996</span>
+                            <span>110 分钟</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="movie-detail.html" class="movie-card">
+                    <div class="poster-wrap">
+                        <img src="https://images.unsplash.com/photo-1594908900066-3f47337549d8?w=800&h=1200&fit=crop&q=80" alt="战狼 2">
+                        <div class="rating-badge"><i class="fas fa-star"></i> 8.2</div>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">战狼 2</h3>
+                        <p class="card-desc">一名中国军人在非洲战乱中孤身营救同胞，与雇佣兵展开殊死搏斗。</p>
+                        <div class="card-meta">
+                            <span>动作 · 2017</span>
+                            <span>123 分钟</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="movie-detail.html" class="movie-card">
+                    <div class="poster-wrap">
+                        <img src="https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800&h=1200&fit=crop&q=80" alt="红海行动">
+                        <div class="rating-badge"><i class="fas fa-star"></i> 8.3</div>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">红海行动</h3>
+                        <p class="card-desc">中国海军蛟龙突击队在也门执行撤侨任务，与恐怖分子展开激烈战斗。</p>
+                        <div class="card-meta">
+                            <span>动作 · 2018</span>
+                            <span>138 分钟</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- 爱情电影区域 -->
+        <section id="romance-section" class="category-movies-section">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-heart" style="margin-right: 15px; color: #ed64a4;"></i>爱情电影</h2>
+                <p class="section-desc">感受跨越时空的浪漫爱情，体验心动与感动</p>
+                <a href="#" class="view-all-btn" onclick="alert('更多分类页面即将上线'); return false;">查看全部 <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="movies-grid">
+                <a href="movie-detail.html" class="movie-card">
+                    <div class="poster-wrap">
+                        <img src="https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?w=800&h=1200&fit=crop&q=80" alt="泰坦尼克号">
+                        <div class="rating-badge"><i class="fas fa-star"></i> 8.9</div>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">泰坦尼克号</h3>
+                        <p class="card-desc">穷画家杰克和贵族女露丝在豪华邮轮泰坦尼克号上相遇，展开了一段跨越阶级的凄美爱情。</p>
+                        <div class="card-meta">
+                            <span>爱情 · 1997</span>
+                            <span>194 分钟</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="movie-detail.html" class="movie-card">
+                    <div class="poster-wrap">
+                        <img src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=800&h=1200&fit=crop&q=80" alt="恋恋笔记本">
+                        <div class="rating-badge"><i class="fas fa-star"></i> 8.7</div>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">恋恋笔记本</h3>
+                        <p class="card-desc">一个关于爱情与记忆的故事，一对恋人跨越数十年的深情守候。</p>
+                        <div class="card-meta">
+                            <span>爱情 · 2004</span>
+                            <span>123 分钟</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="movie-detail.html" class="movie-card">
+                    <div class="poster-wrap">
+                        <img src="https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800&h=1200&fit=crop&q=80" alt="爱乐之城">
+                        <div class="rating-badge"><i class="fas fa-star"></i> 8.5</div>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">爱乐之城</h3>
+                        <p class="card-desc">一名爵士钢琴家和一名女演员在洛杉矶相遇，为了梦想和爱情做出艰难选择。</p>
+                        <div class="card-meta">
+                            <span>爱情 · 2016</span>
+                            <span>128 分钟</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="movie-detail.html" class="movie-card">
+                    <div class="poster-wrap">
+                        <img src="https://images.unsplash.com/photo-1492633423870-43d1cd2775eb?w=800&h=1200&fit=crop&q=80" alt="怦然心动">
+                        <div class="rating-badge"><i class="fas fa-star"></i> 9.0</div>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">怦然心动</h3>
+                        <p class="card-desc">一对少年男女从童年到青春期的纯真情感，关于成长与爱的温暖故事。</p>
+                        <div class="card-meta">
+                            <span>爱情 · 2010</span>
+                            <span>90 分钟</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="movie-detail.html" class="movie-card">
+                    <div class="poster-wrap">
+                        <img src="https://images.unsplash.com/photo-1520854221256-174118816f8b?w=800&h=1200&fit=crop&q=80" alt="罗马假日">
+                        <div class="rating-badge"><i class="fas fa-star"></i> 8.8</div>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">罗马假日</h3>
+                        <p class="card-desc">一位欧洲公主与一名美国记者在罗马相遇，展开了一段浪漫的一日恋情。</p>
+                        <div class="card-meta">
+                            <span>爱情 · 1953</span>
+                            <span>118 分钟</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="movie-detail.html" class="movie-card">
+                    <div class="poster-wrap">
+                        <img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=800&h=1200&fit=crop&q=80" alt="大话西游">
+                        <div class="rating-badge"><i class="fas fa-star"></i> 8.9</div>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">大话西游</h3>
+                        <p class="card-desc">至尊宝与紫霞仙子的旷世奇缘，一段跨越五百年的爱情传奇。</p>
+                        <div class="card-meta">
+                            <span>爱情 · 1995</span>
+                            <span>95 分钟</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- 喜剧电影区域 -->
+        <section id="comedy-section" class="category-movies-section">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-laugh" style="margin-right: 15px; color: #f6ad55;"></i>喜剧电影</h2>
+                <p class="section-desc">轻松幽默的剧情，让你开怀大笑，忘却烦恼</p>
+                <a href="#" class="view-all-btn" onclick="alert('更多分类页面即将上线'); return false;">查看全部 <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="movies-grid">
+                <a href="movie-detail.html" class="movie-card">
+                    <div class="poster-wrap">
+                        <img src="https://images.unsplash.com/photo-1560130958-f7e832f70950?w=800&h=1200&fit=crop&q=80" alt="三傻大闹宝莱坞">
+                        <div class="rating-badge"><i class="fas fa-star"></i> 9.2</div>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">三傻大闹宝莱坞</h3>
+                        <p class="card-desc">三名大学生在印度顶尖工程学院的搞笑经历，讽刺应试教育，传递人生智慧。</p>
+                        <div class="card-meta">
+                            <span>喜剧 · 2009</span>
+                            <span>170 分钟</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="movie-detail.html" class="movie-card">
+                    <div class="poster-wrap">
+                        <img src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=800&h=1200&fit=crop&q=80" alt="触不可及">
+                        <div class="rating-badge"><i class="fas fa-star"></i> 9.1</div>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">触不可及</h3>
+                        <p class="card-desc">一名瘫痪的法国富豪与来自贫民窟的黑人护工之间跨越阶级的感人友情。</p>
+                        <div class="card-meta">
+                            <span>喜剧 · 2011</span>
+                            <span>112 分钟</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="movie-detail.html" class="movie-card">
+                    <div class="poster-wrap">
+                        <img src="https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800&h=1200&fit=crop&q=80" alt="让子弹飞">
+                        <div class="rating-badge"><i class="fas fa-star"></i> 8.8</div>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">让子弹飞</h3>
+                        <p class="card-desc">民国年间，一名绿林好汉化身县长，与地方恶霸斗智斗勇的黑色幽默故事。</p>
+                        <div class="card-meta">
+                            <span>喜剧 · 2010</span>
+                            <span>132 分钟</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="movie-detail.html" class="movie-card">
+                    <div class="poster-wrap">
+                        <img src="https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800&h=1200&fit=crop&q=80" alt="疯狂动物城">
+                        <div class="rating-badge"><i class="fas fa-star"></i> 8.9</div>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">疯狂动物城</h3>
+                        <p class="card-desc">一只兔子警官和一只狐狸骗子联手破案，在动物城里展开的冒险喜剧。</p>
+                        <div class="card-meta">
+                            <span>喜剧 · 2016</span>
+                            <span>108 分钟</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="movie-detail.html" class="movie-card">
+                    <div class="poster-wrap">
+                        <img src="https://images.unsplash.com/photo-1596727147705-54a9d0832898?w=800&h=1200&fit=crop&q=80" alt="功夫">
+                        <div class="rating-badge"><i class="fas fa-star"></i> 8.6</div>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">功夫</h3>
+                        <p class="card-desc">一名街头混混意外成为武林高手，在猪笼城寨与斧头帮展开对决。</p>
+                        <div class="card-meta">
+                            <span>喜剧 · 2004</span>
+                            <span>100 分钟</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="movie-detail.html" class="movie-card">
+                    <div class="poster-wrap">
+                        <img src="https://images.unsplash.com/photo-1594908900066-3f47337549d8?w=800&h=1200&fit=crop&q=80" alt="你好，李焕英">
+                        <div class="rating-badge"><i class="fas fa-fire"></i> 热门</div>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">你好，李焕英</h3>
+                        <p class="card-desc">一名女子穿越回 1981 年，与年轻时的母亲相遇，试图改变母亲命运的感人故事。</p>
+                        <div class="card-meta">
+                            <span>喜剧 · 2021</span>
+                            <span>128 分钟</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    function logout() {
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('username');
+        window.location.href = '../index.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const username = localStorage.getItem('username');
+        if (username) {
+            const navUsername = document.getElementById('navUsername');
+            const mobileNavUsername = document.getElementById('mobileNavUsername');
+            if (navUsername) navUsername.textContent = username;
+            if (mobileNavUsername) mobileNavUsername.textContent = username;
+        }
+
+        // Sidebar scroll spy
+        const sections = document.querySelectorAll('.category-movies-section');
+        const navItems = document.querySelectorAll('.category-item');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (scrollY >= (sectionTop - 200)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('href') === `#${current}`) {
+                    item.classList.add('active');
+                }
+            });
+        });
+
+        // Smooth scroll for sidebar links
+        document.querySelectorAll('.category-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                if (targetSection) {
+                    window.scrollTo({
+                        top: targetSection.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    });
+
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', function() {
+            mobileMenu.classList.toggle('hidden');
+        });
+    }
+</script>
+
+</body>
+</html>

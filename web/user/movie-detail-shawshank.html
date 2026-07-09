@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电影详情 - Movie-Muse</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: url('../images/pawel-czerwinski-prMn9KINLtI-unsplash.jpg') center center / cover no-repeat;
+            position: relative;
+            min-height: 100vh;
+        }
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 0;
+        }
+        * { position: relative; z-index: 1; }
+        .nav-container { display: flex; align-items: center; justify-content: space-between; }
+        .logo { font-size: 24px; font-weight: 700; color: #ffffff; text-decoration: none; margin-right: 40px; letter-spacing: 1px; display: flex; align-items: center; }
+        .nav-link { color: rgba(255, 255, 255, 0.9); text-decoration: none; font-weight: 500; transition: color 0.2s ease; }
+        .nav-link:hover { color: #ffffff; }
+        .movie-detail-section { padding: 2rem 8% 4rem 8%; }
+        .movie-detail {
+            display: flex; gap: 3rem;
+            background: rgba(30, 37, 64, 0.9);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 2.5rem;
+        }
+        .movie-detail .poster { flex: 0 0 30%; max-width: 30%; }
+        .movie-detail .poster img { width: 100%; border-radius: 12px; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); }
+        .movie-detail .info { flex: 1; padding-top: 1rem; }
+        .movie-detail .title { font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem; color: #ffffff; }
+        .movie-detail .meta { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem; }
+        .movie-detail .rating { display: flex; align-items: center; gap: 8px; }
+        .movie-detail .rating .stars { color: #fbbf24; font-size: 1.25rem; }
+        .movie-detail .rating .score { font-weight: 600; font-size: 1.25rem; color: #ffffff; }
+        .movie-detail .year, .movie-detail .runtime { color: rgba(255, 255, 255, 0.5); font-size: 0.95rem; }
+        .movie-detail .genre { background: rgba(138, 43, 226, 0.3); color: #d8b4fe; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; }
+        .movie-detail .director, .movie-detail .cast { margin-bottom: 0.75rem; color: rgba(255, 255, 255, 0.6); }
+        .movie-detail .director strong, .movie-detail .cast strong { color: #ffffff; }
+        .movie-detail .synopsis { margin: 1.5rem 0; line-height: 1.8; color: rgba(255, 255, 255, 0.6); text-align: justify; }
+        .movie-detail .actions { display: flex; gap: 1rem; }
+        .recommended-section { margin-top: 3rem; }
+        .recommended-section h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; color: #ffffff; }
+        .recommended-movies { display: flex; gap: 1.5rem; overflow-x: auto; padding-bottom: 1rem; scrollbar-width: none; }
+        .recommended-movies::-webkit-scrollbar { display: none; }
+        .movie-card-rec {
+            flex: 0 0 200px;
+            background: rgba(30, 37, 64, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .movie-card-rec:hover { transform: translateY(-6px); box-shadow: 0 12px 24px rgba(138, 43, 226, 0.2); }
+        .movie-card-rec .card-poster { width: 100%; height: 280px; object-fit: cover; }
+        .movie-card-rec .card-info { padding: 1rem; }
+        .movie-card-rec .card-title { font-weight: 600; margin-bottom: 0.5rem; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .movie-card-rec .card-rating { display: flex; align-items: center; gap: 4px; }
+        .movie-card-rec .card-rating .stars { color: #fbbf24; font-size: 0.85rem; }
+        .movie-card-rec .card-rating .score { font-size: 0.85rem; color: rgba(255, 255, 255, 0.5); }
+        .page-footer { text-align: center; padding: 2rem; margin-top: 3rem; border-top: 1px solid rgba(255, 255, 255, 0.05); }
+        .page-footer .footer-links { display: flex; justify-content: center; gap: 2rem; margin-bottom: 1rem; }
+        .page-footer .footer-links a { color: rgba(255, 255, 255, 0.4); text-decoration: none; font-size: 0.9rem; transition: color 0.3s ease; }
+        .page-footer .footer-links a:hover { color: #a855f7; }
+        .page-footer p { color: rgba(255, 255, 255, 0.3); font-size: 0.85rem; margin: 0; }
+        .video-player-section { margin-top: 3rem; background: rgba(30, 37, 64, 0.9); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 2rem; }
+        .video-player-section h2 { font-size: 1.8rem; color: #ffffff; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 12px; }
+        .video-player-section h2 i { color: #a855f7; }
+        .video-player-box { width: 100%; background: #000; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); position: relative; padding-top: 56.25%; height: 0; }
+        .video-player-box iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+        .video-placeholder { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: rgba(255, 255, 255, 0.6); font-size: 1.2rem; }
+        .video-placeholder i { font-size: 4rem; margin-bottom: 1rem; opacity: 0.3; }
+        .free-zone-badge { display: inline-block; padding: 0.5rem 1rem; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1f2937; border-radius: 20px; font-weight: 700; font-size: 0.9rem; margin-left: 1rem; animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } }
+        .search-bar-page { max-width: 1200px; margin: 5.5rem auto 0; padding: 0 2rem; }
+        .search-bar-page .search-input-wrapper { position: relative; max-width: 600px; margin: 0 auto 2rem; }
+        @media (max-width: 768px) {
+            .movie-detail { flex-direction: column; padding: 1.5rem; }
+            .movie-detail .poster { max-width: 100%; }
+            .movie-detail .poster img { max-width: 250px; margin: 0 auto; display: block; }
+            .movie-detail .title { font-size: 1.75rem; }
+            .movie-detail .meta { flex-wrap: wrap; gap: 0.75rem; }
+            .movie-detail .actions { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="fixed top-0 left-0 right-0 z-50" style="background: transparent; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="nav-container">
+                <a href="../index.html" class="logo">Movie-Muse</a>
+                <div class="hidden md:flex items-center gap-8">
+                    <a href="../index.html" class="nav-link">首页</a>
+                    <a href="profile.html" class="nav-link">个人中心</a>
+                    <a href="login.jsp" class="bg-white/20 hover:bg-white/30 text-white px-5 py-2 rounded-full font-medium transition-colors backdrop-blur-sm border border-white/30" id="navLoginBtn">登录 / 注册</a>
+                    <a href="profile.html" class="bg-white/20 hover:bg-white/30 text-white px-5 py-2 rounded-full font-medium transition-colors backdrop-blur-sm border border-white/30" id="navUsername" style="display: none;">用户</a>
+                </div>
+                <button id="mobileMenuBtn" class="md:hidden text-white text-xl"><i class="fas fa-bars"></i></button>
+            </div>
+            <div id="mobileMenu" class="hidden md:hidden mt-4 pb-4 border-t border-white/10 pt-4">
+                <div class="flex flex-col gap-4">
+                    <a href="../index.html" class="nav-link">首页</a>
+                    <a href="profile.html" class="nav-link">个人中心</a>
+                    <a href="login.jsp" class="bg-white/20 hover:bg-white/30 text-white px-5 py-2 rounded-full font-medium text-center transition-colors backdrop-blur-sm border border-white/30" id="mobileNavLoginBtn">登录 / 注册</a>
+                    <a href="profile.html" class="bg-white/20 hover:bg-white/30 text-white px-5 py-2 rounded-full font-medium text-center transition-colors backdrop-blur-sm border border-white/30" id="mobileNavUsername" style="display: none;">用户</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="search-bar-page">
+        <div class="search-input-wrapper">
+            <input type="text" class="search-glass w-full pl-12 pr-12 py-4 rounded-xl focus:outline-none transition-all" placeholder="搜索电影、导演、演员...">
+            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-white/40"></i>
+        </div>
+    </div>
+
+    <main class="movie-detail-section">
+        <div class="movie-detail">
+            <div class="poster">
+                <img id="movie-poster" src="" alt="">
+            </div>
+            <div class="info">
+                <h1 class="title" id="movie-title"></h1>
+                <div class="meta">
+                    <div class="rating">
+                        <span class="stars" id="movie-stars">★★★★★</span>
+                        <span class="score" id="movie-score"></span>
+                    </div>
+                    <span class="year" id="movie-year"></span>
+                    <span class="runtime" id="movie-runtime"></span>
+                    <span class="genre" id="movie-genre"></span>
+                </div>
+                <p class="director" id="movie-director"></p>
+                <p class="cast" id="movie-cast"></p>
+                <p class="synopsis" id="movie-synopsis"></p>
+                <div class="actions">
+                    <button class="btn btn-primary" id="favorite-btn"><i class="fas fa-heart"></i> 加入收藏</button>
+                    <button class="btn btn-secondary"><i class="fas fa-play"></i> 立即观看</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="recommended-section">
+            <h2>猜你喜欢</h2>
+            <div class="recommended-movies" id="recommended-movies"></div>
+        </div>
+
+        <div class="video-player-section">
+            <h2>
+                <i class="fas fa-play-circle"></i>
+                在线观看
+                <span class="free-zone-badge" id="freeZoneBadge" style="display: none;"><i class="fas fa-gift"></i> 限时免费</span>
+            </h2>
+            <div id="video-player-box" class="video-player-box"></div>
+        </div>
+
+        <div class="comments-section" style="margin-top: 60px; background: rgba(30, 37, 64, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 16px; padding: 30px; border: 1px solid rgba(255, 255, 255, 0.08);">
+            <h2 class="comments-title" style="font-size: 1.8rem; color: #ffffff; margin-bottom: 25px; display: flex; align-items: center; gap: 12px;">
+                <i class="fas fa-comments" style="color: #a855f7;"></i>
+                评论区
+                <span id="comment-count" style="font-size: 1rem; color: rgba(255, 255, 255, 0.6); font-weight: 400;">(0 条评论)</span>
+            </h2>
+            <div class="comment-input-area" style="margin-bottom: 40px; background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                <div style="display: flex; gap: 15px; align-items: flex-start;">
+                    <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i class="fas fa-user" style="color: white; font-size: 20px;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <textarea id="comment-textarea" placeholder="写下您的影评..." rows="3" style="width: 100%; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 12px; color: #ffffff; font-size: 14px; resize: vertical; font-family: inherit;"></textarea>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
+                            <span id="current-user" style="color: rgba(255, 255, 255, 0.6); font-size: 13px;">当前访客</span>
+                            <button id="post-comment-btn" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-size: 14px;">
+                                <i class="fas fa-paper-plane" style="margin-right: 6px;"></i>发布评论
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="comments-list" class="comments-list"></div>
+        </div>
+    </main>
+
+    <footer class="page-footer">
+        <div class="footer-links">
+            <a href="#">关于我们</a>
+            <a href="#">隐私政策</a>
+            <a href="#">服务条款</a>
+            <a href="#">联系我们</a>
+        </div>
+        <p>&copy; 2024 Movie-Muse. All rights reserved.</p>
+    </footer>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/vip-system.js"></script>
+    <script>
+        const movieDatabase = {
+            '肖申克的救赎': {
+                id: 2,
+                title: '肖申克的救赎',
+                poster: 'https://picsum.photos/300/450?random=5',
+                rating: 9.5,
+                year: 1994,
+                runtime: '142 分钟',
+                genre: '剧情',
+                director: '弗兰克·德拉邦特',
+                cast: '蒂姆·罗宾斯, 摩根·弗里曼',
+                synopsis: '银行家安迪被冤枉杀害妻子及其情夫，被判终身监禁进入肖申克监狱。在狱中，他与老囚犯瑞德成为好友，并凭借自己的金融知识帮助狱警和典狱长处理税务问题。在漫长的 20 年牢狱生涯中，安迪始终保持着对自由的渴望和希望，最终通过自己挖掘的隧道成功越狱，完成了自我救赎的传奇故事。',
+                videoEmbedCode: '<iframe src="//player.bilibili.com/player.html?isOutside=true&aid=1153458324&bvid=BV1uZ421n7A8&cid=1511313841&p=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"></iframe>',
+                isFreeZone: true
+            }
+        };
+
+        const CommentSystem = {
+            mockComments: [
+                { id: 1, username: '经典电影迷', content: '这是一部值得反复观看的经典之作，希望与自由的主题令人深思。', timestamp: Date.now() - 3600000 },
+                { id: 2, username: '剧情片爱好者', content: '摩根·弗里曼的表演太出色了，整部电影充满人性的光辉。', timestamp: Date.now() - 7200000 },
+                { id: 3, username: '影迷小张', content: '每次看都有新的感悟，真正的救赎来自内心。', timestamp: Date.now() - 86400000 }
+            ],
+            init: function() { this.renderComments(); this.setupEventListeners(); },
+            renderComments: function() {
+                const commentsList = document.getElementById('comments-list');
+                const commentCount = document.getElementById('comment-count');
+                if (!commentsList) return;
+                commentsList.innerHTML = '';
+                if (commentCount) commentCount.textContent = `(${this.mockComments.length}条评论)`;
+                this.mockComments.forEach(comment => {
+                    const commentElement = this.createCommentElement(comment);
+                    commentsList.appendChild(commentElement);
+                });
+            },
+            createCommentElement: function(comment) {
+                const div = document.createElement('div');
+                div.className = 'comment-item';
+                div.style.cssText = 'background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 20px; margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.08); transition: all 0.3s ease;';
+                div.onmouseover = function() { this.style.background = 'rgba(255, 255, 255, 0.08)'; this.style.borderColor = 'rgba(168, 85, 247, 0.3)'; };
+                div.onmouseout = function() { this.style.background = 'rgba(255, 255, 255, 0.05)'; this.style.borderColor = 'rgba(255, 255, 255, 0.08)'; };
+                const timeAgo = this.getTimeAgo(comment.timestamp);
+                const userInitial = comment.username.charAt(0).toUpperCase();
+                div.innerHTML = `<div style="display: flex; gap: 15px; align-items: flex-start;"><div style="width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><span style="color: white; font-weight: 700; font-size: 18px;">${userInitial}</span></div><div style="flex: 1; min-width: 0;"><div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap;"><span style="color: #ffffff; font-weight: 600; font-size: 15px;">${comment.username}</span><span style="color: rgba(255, 255, 255, 0.4); font-size: 12px;">${timeAgo}</span></div><p style="color: rgba(255, 255, 255, 0.85); line-height: 1.6; margin: 0; word-wrap: break-word;">${comment.content}</p></div></div>`;
+                return div;
+            },
+            getTimeAgo: function(timestamp) {
+                const now = Date.now();
+                const diff = now - timestamp;
+                const seconds = Math.floor(diff / 1000);
+                const minutes = Math.floor(seconds / 60);
+                const hours = Math.floor(minutes / 60);
+                const days = Math.floor(hours / 24);
+                if (days > 0) return `${days}天前`;
+                else if (hours > 0) return `${hours}小时前`;
+                else if (minutes > 0) return `${minutes}分钟前`;
+                else return '刚刚';
+            },
+            addComment: function(content) {
+                if (!content || content.trim() === '') { alert('请输入评论内容'); return false; }
+                const newComment = { id: this.mockComments.length + 1, username: '当前访客', content: content.trim(), timestamp: Date.now() };
+                this.mockComments.unshift(newComment);
+                this.renderComments();
+                const textarea = document.getElementById('comment-textarea');
+                if (textarea) textarea.value = '';
+                return true;
+            },
+            setupEventListeners: function() {
+                const postBtn = document.getElementById('post-comment-btn');
+                const textarea = document.getElementById('comment-textarea');
+                if (postBtn) postBtn.addEventListener('click', () => { const content = textarea.value; this.addComment(content); });
+                if (textarea) textarea.addEventListener('keydown', (e) => { if (e.ctrlKey && e.key === 'Enter') { const content = textarea.value; this.addComment(content); } });
+            }
+        };
+
+        function loadMovieData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            let movieTitle = urlParams.get('movie');
+            
+            console.log('URL 参数 movie:', movieTitle);
+            
+            // 处理中文编码问题
+            if (movieTitle && movieTitle.includes('%')) {
+                try {
+                    movieTitle = decodeURIComponent(movieTitle);
+                } catch (e) {
+                    console.error('解码失败:', e);
+                }
+            }
+            
+            console.log('解码后的 movie:', movieTitle);
+            console.log('数据库中的电影:', Object.keys(movieDatabase));
+            
+            if (!movieTitle || !movieDatabase[movieTitle]) {
+                console.log('电影不存在，跳转到暂无资源页面');
+                window.location.href = 'movie-detail-unavailable.html';
+                return;
+            }
+
+            const movie = movieDatabase[movieTitle];
+            console.log('加载电影数据:', movie.title);
+            
+            document.getElementById('movie-poster').src = movie.poster;
+            document.getElementById('movie-poster').alt = movie.title;
+            document.getElementById('movie-title').textContent = movie.title;
+            document.getElementById('movie-score').textContent = movie.rating;
+            document.getElementById('movie-year').textContent = movie.year;
+            document.getElementById('movie-runtime').textContent = movie.runtime;
+            document.getElementById('movie-genre').textContent = movie.genre;
+            document.getElementById('movie-director').innerHTML = `<strong>导演:</strong> ${movie.director}`;
+            document.getElementById('movie-cast').innerHTML = `<strong>主演:</strong> ${movie.cast}`;
+            document.getElementById('movie-synopsis').textContent = movie.synopsis;
+
+            const playerBox = document.getElementById('video-player-box');
+            const freeZoneBadge = document.getElementById('freeZoneBadge');
+            
+            if (playerBox && movie.videoEmbedCode) {
+                playerBox.innerHTML = movie.videoEmbedCode;
+            }
+            
+            if (freeZoneBadge) {
+                freeZoneBadge.style.display = movie.isFreeZone ? 'inline-block' : 'none';
+            }
+
+            const recommendedMovies = document.getElementById('recommended-movies');
+            const recommendedList = [
+                { title: '星际穿越', poster: 'https://picsum.photos/200/280?random=1', rating: 9.4, link: 'movie-detail.html?movie=星际穿越' },
+                { title: '千与千寻', poster: 'https://picsum.photos/200/280?random=8', rating: 9.2, link: 'movie-detail-spirited.html?movie=千与千寻' },
+                { title: '盗梦空间', poster: 'https://picsum.photos/200/280?random=2', rating: 9.3, link: 'movie-detail-unavailable.html' },
+                { title: '泰坦尼克号', poster: 'https://picsum.photos/200/280?random=3', rating: 9.4, link: 'movie-detail-unavailable.html' }
+            ];
+            
+            recommendedMovies.innerHTML = recommendedList.map(m => `
+                <a href="${m.link}" class="movie-card-rec" style="text-decoration: none;">
+                    <img src="${m.poster}" alt="${m.title}" class="card-poster">
+                    <div class="card-info">
+                        <h3 class="card-title">${m.title}</h3>
+                        <div class="card-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="score">${m.rating}</span>
+                        </div>
+                    </div>
+                </a>
+            `).join('');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            const username = localStorage.getItem('username') || '用户';
+            
+            if (isLoggedIn) {
+                const navLoginBtn = document.getElementById('navLoginBtn');
+                const navUsername = document.getElementById('navUsername');
+                const mobileNavLoginBtn = document.getElementById('mobileNavLoginBtn');
+                const mobileNavUsername = document.getElementById('mobileNavUsername');
+                
+                if (navLoginBtn) navLoginBtn.style.display = 'none';
+                if (navUsername) { navUsername.textContent = username; navUsername.style.display = 'block'; }
+                if (mobileNavLoginBtn) mobileNavLoginBtn.style.display = 'none';
+                if (mobileNavUsername) { mobileNavUsername.textContent = username; mobileNavUsername.style.display = 'block'; }
+            }
+            
+            loadMovieData();
+            CommentSystem.init();
+        });
+
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        if (mobileMenuBtn && mobileMenu) {
+            mobileMenuBtn.addEventListener('click', () => { mobileMenu.classList.toggle('hidden'); });
+        }
+
+        const favoriteBtn = document.getElementById('favorite-btn');
+        let isFavorited = false;
+        favoriteBtn.addEventListener('click', function() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            if (!isLoggedIn) { alert('请先登录以使用收藏功能'); window.location.href = 'login.jsp'; return; }
+            isFavorited = !isFavorited;
+            if (isFavorited) {
+                favoriteBtn.innerHTML = '<i class="fas fa-heart" style="color: #ef4444;"></i> 已收藏';
+                favoriteBtn.classList.add('favorited');
+                alert('已加入收藏！');
+            } else {
+                favoriteBtn.innerHTML = '<i class="fas fa-heart"></i> 加入收藏';
+                favoriteBtn.classList.remove('favorited');
+                alert('已取消收藏！');
+            }
+        });
+        
+        const searchInput = document.querySelector('.search-glass');
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const query = searchInput.value.trim();
+                if (query) window.location.href = '../search.html?q=' + encodeURIComponent(query);
+            }
+        });
+    </script>
+</body>
+</html>
